@@ -1,0 +1,176 @@
+1、为何Collection不从Cloneable和Serializable接口继承？
+
+    Collection接口制定了一组对象,对象即是它的元素，怎样来维护这些元素是由Collection的详细实现决定，比如一些如list的Collection
+    实现同一有反复的元素，而其他的集合如Set它是不同意有反复的元素，而非常多的Collection实现它有一个公共的clone()方法，然而把它
+    放到集合的全部实现中是没有任何意义的，这个是由于Collection是一个抽象的表现决定的，它重要的是实现。当与详细实现打交道的时候，
+    克隆或序列化的语义和含义才能发挥作用所以详细实现应该决定怎样对它克隆和序列化，或它能否被克隆或者序列化，在全部的实现中，
+    来授权和序列化，它最终会导致更少的灵活性和很多其他限制，特定的实现应该决定它能否被克隆和序列化。
+
+
+    Field的父类AccessibleObject的setAccessible(true)方法将访问权限检查功能取消。
+    setAccessible(true) :  设置私有的属性可得到             暴力访问
+
+
+2、对应关系：
+        long.class <==> Long.TYPE
+        double.class <==> Double.TYPE
+        float.class <==> Float.TYPE
+        bool.class <==> Boolean.TYPE
+        char.class <==> Character.TYPE
+        byte.class <==> Byte.TYPE
+        void.class <==> Void.TYPE
+        short.class <==> Short.TYPE
+
+    每一个数据类型都有一个默认的静态属性：.class，用该属性即可获取。
+
+    newInstance()实际上是把new这个方式分解了，首先调用Class加载方法加载某个类，然后实例化。这样的好处是可以在调用Class的静态加载方法forName时获得更好的灵活性，提供了一种降耦的手段。
+
+        newInstance：弱类型，低效率。只能调用无参构造。
+        new：强类型，相对较高。能调用任何public构造。
+
+
+3、obj instanceof class 和  class.isInstance(obj)区别：
+    obj instanceof class   表示对象obj是否是class类或其子类的对象
+        1、一个对象是自身类的一个对象
+        2、一个对象是自身类父类和接口的一个对象
+        3、所有对象都是Object类的对象
+        4、凡是null有关的都是false
+
+    class.isInstance(obj)    即对象obj能否转化为类class的对象，动态等价于instanceof
+        1、一个对象能转化为自身类的对象
+        2、一个对象能被转化为自身类的父类和实现的接口的对象
+        3、所有对象都能转化为Object类的对象
+        4、凡是null有关的都是false
+
+    对obj instanceof class，在编译时编译器需要知道类的具体类型
+    对class.isInstance(obj)，编译器在运行时才进行类型检查，故可用于反射，泛型中
+
+
+
+4、反射总结：
+    1、反射的定义
+        程序可以访问，检测和修改它本身状态或行为的一种能力，并能根据自身行为的状态和结果，调整或修改应用所描述行为的状态和相关的语义。
+
+    2、反射的类
+        1）反射类
+            java.lang.Class
+            java.lang.reflect.Constructor
+            java.lang.reflect.Field               字段、属性
+            java.lang.reflect.Method
+            java.lang.reflect.Modified            修饰符
+
+        2)相关类
+            java.lang.reflect.AccessibleObject   提供了将反射对象标记为在使用它时抑制默认Java语言访问控制检查的功能。
+            java.lang.reflect.Array   提供静态方法来动态创建和访问Java数组
+            java.lang.reflect.Proxy   提供了创建动态代理类和实例的静态方法，它也是由这些方法创建的所有动态代理类的超类
+
+    3、Class
+        1）获取Class对象的三种方式
+            类名.class
+            Class.forName()           这种最适合反射
+            对象.getClass()
+
+        2）Class的成员方法
+            1.构造方法
+                getConstructor()              获取指定的构造器对象(public)
+                getConstructors()             获取所有的构造器对象，返回一个数组
+                getDeclaredConstructor()      获取指定的构造器对象(四大访问类型都可以)
+                getDeclaredConstructors()     获取所有的构造器对象，返回一个数组(四大访问类型都可以)
+
+            2.变量域
+                getField()                    获取成员变量(public)
+                getFields()
+                getDeclaredField()
+                getDeclaredFields()
+
+            3.方法
+                getMethod()
+                getMethods()
+                getDeclaredMethod()
+                getDeclaredMethods()
+
+            4.成员类
+                getClasses()                  返回类定义的公共的内部类,以及从父类、父接口那里继承来的内部类(返回值Class[])
+                getDeclaredClasses()          返回类中定义的公共、私有、保护的内部类(返回值Class[])
+
+            5.类注解
+                getAnnotation()
+                getAnnotations()
+                getAnnotationsByType()
+
+            6.父类
+                getSuperClass()
+                getGenericSuperClass()        获取包含泛型的父类
+                getAnnotatedSuperClass()      获取extends父类时的标注的注解和父类，如class B extends @Anno A{}
+
+            7.接口
+                getInterfaces()
+                getGenericInterfaces()        获取包含泛型的接口
+                getAnnotatedInterfaces()      获取implements接口时的标注的注解和接口，如class  C implements @AnnoA A,@AnnoB B {  }
+
+            8.理解封闭类
+                getDeclaringClass()           返回Class对象，表示this类在return勒种被声明，this类对象所表示的类或接口是return类的成员。
+
+            9.封闭
+                getEnclosingClass()
+                getEnclosingConstructor()
+                getEnclosingMethod()
+
+            10.类型判断
+                isInstance()                  判断是否能被强转成某个对象类型
+                isPrimitive()                 判断是否是基本数据类型
+                isArray()                     判断是否是数组
+                isMemberClass()               成员类
+                isLocalClass()                局部类
+                isAnnonymousClass()           匿名类
+                isInterface()
+                isEnum()
+                isAnnotation()                注解
+
+            11.类名
+                getName()                     内部名
+                getSimpleName()               缩写名
+                getCanonicalName()            全称名
+
+            12.其他方法
+                newInstance()                 无参构造方法创建对象，没有无参构造方法拋异常InstantiationException
+                getClassLoader()
+                getParameters()               参数类型
+                getTypeParameters()           泛型参数类型
+                getModifiers()
+                getPackage()
+                getResource()                 获取资源返回url
+                getResourceAsStream()         获取资源返回InputStream
+
+    4、Constructor
+        1)特殊
+            getName()
+            getModifiers()
+            isVarArgs()                       判断是否是可变参数
+            isSynthetic()                     由编译器自动添加，在非静态成员类用于传入外部类对象的构造方法是复合构造方法
+            newInstance()
+
+        2)参数
+            getGenericParameterTypes()        形参泛型参数类型
+            getParameterTypes()               形参参数类型
+            getTypeParameters()               泛型参数占位符
+
+        3)异常
+            getExceptionTypes()
+            getGenericExceptionTypes()
+
+        4)注解
+            getAnnotation
+            getDeclaredAnnotations
+            getParameterAnnotations           注解在形参
+
+    5、Field
+
+    6、Method
+            invoke()                          异步执行,调用方法
+            getDeclaringClass()               获取Method()声明所在的类
+            getDefaultValue()
+
+    7、AccessibleObject
+            isAccessible()
+            setAccessible()
